@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pitch Visualizer — From Words to Storyboard</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garant:ital,wght@0,400;0,600;1,400;1,600&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- jsPDF for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- PptxGenJS for PPT export -->
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+
+<body>
+
+  <!-- Grain overlay -->
+  <div class="grain-overlay" aria-hidden="true"></div>
+
+  <!-- ═══════════════════ INPUT SECTION ═══════════════════ -->
+  <section class="input-section" id="inputSection">
+
+    <div class="brand">
+      <div class="brand-eyebrow">
+        <span class="reel-icon">⬡</span>
+        <span class="mono">PITCH VISUALIZER</span>
+        <span class="reel-icon">⬡</span>
+      </div>
+      <h1 class="brand-title">From Words<br/><em>to Storyboard</em></h1>
+      <p class="brand-sub">Paste your pitch, script, or story - we'll build the frames.</p>
+    </div>
+
+    <div class="input-card">
+
+      <div class="textarea-wrap">
+        <label class="field-label mono" for="storyText">YOUR STORY</label>
+        <textarea
+          id="storyText"
+          placeholder="Paste your story, pitch, or scene description here. The longer and richer, the better your storyboard…"
+          spellcheck="false"
+        ></textarea>
+        <div class="char-count mono" id="charCount">0 characters</div>
+      </div>
+
+      <div class="style-section">
+        <label class="field-label mono">VISUAL STYLE <span class="optional">— optional</span></label>
+        <div class="style-chips" role="group" aria-label="Visual style">
+          <label class="chip" data-value="photorealistic">
+            <input type="radio" name="style" value="photorealistic" />
+            <span class="chip-icon">◈</span>
+            <span class="chip-label">Photorealistic</span>
+          </label>
+          <label class="chip" data-value="digital_art">
+            <input type="radio" name="style" value="digital_art" />
+            <span class="chip-icon">◉</span>
+            <span class="chip-label">Digital Art</span>
+          </label>
+          <label class="chip" data-value="cinematic">
+            <input type="radio" name="style" value="cinematic" />
+            <span class="chip-icon">◐</span>
+            <span class="chip-label">Cinematic</span>
+          </label>
+          <label class="chip" data-value="watercolor">
+            <input type="radio" name="style" value="watercolor" />
+            <span class="chip-icon">◌</span>
+            <span class="chip-label">Watercolor</span>
+          </label>
+          <label class="chip" data-value="comic">
+            <input type="radio" name="style" value="comic" />
+            <span class="chip-icon">◍</span>
+            <span class="chip-label">Comic</span>
+          </label>
+        </div>
+      </div>
+
+      <button class="generate-btn" id="generateBtn">
+        <span class="btn-inner">
+          <span class="btn-icon">▶</span>
+          <span class="btn-text">Generate Storyboard</span>
+        </span>
+        <span class="btn-shimmer" aria-hidden="true"></span>
+      </button>
+
+    </div>
+
+  </section>
+
+  <!-- ═══════════════════ LOADING OVERLAY ═══════════════════ -->
+  <div class="loading-overlay" id="loadingOverlay" aria-live="polite" aria-hidden="true">
+    <div class="loader-inner">
+
+      <div class="film-loader">
+        <div class="film-strip-loader">
+          <div class="film-perf-row top">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <div class="film-frames-row">
+            <div class="film-frame-loader" id="lf1"></div>
+            <div class="film-frame-loader" id="lf2"></div>
+            <div class="film-frame-loader" id="lf3"></div>
+          </div>
+          <div class="film-perf-row bot">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pipeline-steps">
+        <div class="step-item" id="step1">
+          <span class="step-dot"></span>
+          <span class="step-label mono">Segmenting your story</span>
+        </div>
+        <div class="step-item" id="step2">
+          <span class="step-dot"></span>
+          <span class="step-label mono">Refining scenes</span>
+        </div>
+        <div class="step-item" id="step3">
+          <span class="step-dot"></span>
+          <span class="step-label mono">Building visual prompts</span>
+        </div>
+        <div class="step-item" id="step4">
+          <span class="step-dot"></span>
+          <span class="step-label mono">Generating images</span>
+        </div>
+        <div class="step-item" id="step5">
+          <span class="step-dot"></span>
+          <span class="step-label mono">Writing captions</span>
+        </div>
+      </div>
+
+      <p class="loader-tagline">Developing your frames…</p>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════ STORYBOARD SECTION ═══════════════════ -->
+  <section class="storyboard-section" id="storyboardSection" aria-label="Storyboard viewer">
+
+    <div class="sb-header">
+      <div class="sb-title-wrap">
+        <span class="mono label-tag">STORYBOARD</span>
+        <div class="panel-badge mono" id="panelBadge">PANEL 01 / 01</div>
+      </div>
+      <button class="reset-btn mono" id="resetBtn" title="Start over">↩ New Story</button>
+    </div>
+
+    <!-- Film viewer -->
+    <div class="viewer-wrap">
+      <div class="film-perfs left-perfs" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+      </div>
+
+      <div class="viewer-stage">
+        <button class="nav-arrow prev-arrow" id="prev" aria-label="Previous panel" hidden>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <div class="image-container">
+          <img class="panel-image" id="storyImage" src="" alt="Storyboard panel" />
+          <div class="image-scanlines" aria-hidden="true"></div>
+        </div>
+
+        <button class="nav-arrow next-arrow" id="next" aria-label="Next panel" hidden>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="film-perfs right-perfs" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <!-- Caption -->
+    <div class="caption-area">
+      <div class="caption-text" id="captionText"></div>
+    </div>
+
+    <!-- Thumbnail strip -->
+    <div class="thumbnail-strip" id="thumbnailStrip" role="tablist" aria-label="Panel thumbnails"></div>
+
+    <!-- Keyboard hint -->
+    <p class="keyboard-hint mono" id="keyboardHint">
+      <span>←</span> <span>→</span> navigate panels
+    </p>
+
+    <!-- Downloads -->
+    <div class="download-bar">
+      <button class="dl-btn" id="dlPdfBtn">
+        <span class="dl-icon">⬇</span>
+        <span>Export PDF</span>
+      </button>
+      <button class="dl-btn" id="dlPptBtn">
+        <span class="dl-icon">⬇</span>
+        <span>Export PPT</span>
+      </button>
+    </div>
+
+  </section>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
