@@ -53,4 +53,4 @@ def generated_images(filename):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
