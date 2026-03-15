@@ -606,6 +606,7 @@ Each scene becomes a slide with:
 * Image generation quality depends on the chosen model.
 * LLM responses may occasionally require retries.
 * Diffusion models may introduce minor visual inconsistencies.
+* Currently we rely on at least one of FLUX or POLLINATIONS to work to obtain our images, and failure in both would result in the collapse of our project.
 
 ---
 
