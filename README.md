@@ -5,6 +5,8 @@ The system analyzes narrative text, extracts key scenes, generates visual prompt
 
 The goal of the project is to help founders, designers, storytellers and people in general, to **quickly visualize ideas, product journeys, or startup pitches**. This tool would empower people to translate their ideas from just words to a complete visual showcase.
 
+Demo Video: https://drive.google.com/file/d/147Coc9346jvWWeoiu_jsRXSJCZhPGrok/view?usp=sharing
+
 ---
 
 # Features
