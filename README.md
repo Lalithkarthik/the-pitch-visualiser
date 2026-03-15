@@ -98,7 +98,7 @@ pitch-visualiser/
 ## 1. Clone the Repository
 
 ```
-git clone <repository-url>
+git clone https://github.com/Lalithkarthik/the-pitch-visualiser.git
 cd pitch-visualiser
 ```
 
@@ -199,16 +199,146 @@ Paste a story into the input field and click **Generate Storyboard**.
 
 ---
 
+# System Methodology
+
+The Pitch Visualizer uses a **multi-stage AI pipeline** to convert narrative text into a structured visual storyboard.
+Rather than directly generating images from the raw input text, the system decomposes the task into several stages that progressively transform the input into more structured and visually meaningful representations.
+
+This design improves:
+
+* scene clarity
+* prompt quality
+* visual consistency across generated images
+
+The pipeline follows the architecture below:
+
+```
+Story Text
+   ↓
+Scene Segmentation
+   ↓
+Scene Refinement
+   ↓
+Visual Anchor Generation
+   ↓
+Prompt Engineering
+   ↓
+Image Generation
+   ↓
+Caption Generation
+```
+
+Each stage is designed to solve a specific challenge involved in translating **natural language narratives into visual scenes**.
+
+---
+
+# 1. Story Segmentation
+
+Narrative text typically contains multiple events within a single paragraph.
+If this text is sent directly to an image generation model, the model may attempt to visualize **several unrelated events simultaneously**, leading to cluttered or ambiguous images.
+
+To address this issue, the system first performs **story segmentation**.
+
+Using the **spaCy NLP library**, the input text is analyzed and broken down into **smaller narrative fragments representing individual events or scenes**.
+
+Example input:
+
+```
+A startup struggled with slow customer support.
+They built an AI assistant that solved the problem.
+Soon customers were happier.
+```
+
+Segmented scenes:
+
+```
+Scene 1: Startup struggles with slow support
+Scene 2: Team builds AI assistant
+Scene 3: Customers receive instant help
+```
+
+### Justification
+
+Segmentation improves the pipeline by ensuring that:
+
+* each image corresponds to **one clear event**
+* prompts remain **short and visually focused**
+* storyboard panels maintain **chronological order**
+
+Without this step, diffusion models may produce images that attempt to represent **multiple parts of the story at once**, reducing visual clarity.
+
+---
+
+# 2. Scene Refinement
+
+The segmented scenes are often **too abstract or incomplete** to produce meaningful images.
+
+For example:
+
+```
+Startup struggles with support
+```
+
+This statement does not specify:
+
+* the environment
+* the characters
+* the visible actions
+
+To enrich these descriptions, the system performs **scene refinement using a Large Language Model (LLM)**.
+
+The LLM rewrites each scene into a **clear visual description** while maintaining the original narrative meaning.
+
+Example transformation:
+
+Input scene:
+
+```
+Startup struggles with support
+```
+
+Refined scene:
+
+```
+A small startup support team looks overwhelmed as customer tickets pile up across multiple monitors.
+```
+
+### Justification
+
+LLMs are particularly effective at converting **abstract narrative statements into concrete visual descriptions**.
+
+This step ensures that prompts contain:
+
+* visible objects
+* identifiable characters
+* clear actions
+
+These elements significantly improve the performance of image generation models.
+
+---
+
 # Prompt Engineering Methodology
 
-Prompt engineering is a key part of this system.
-The pipeline separates prompts into two components:
+Prompt engineering is a key component of this system.
+Rather than sending raw descriptions directly to image models, the system constructs **structured prompts designed to improve generation quality and consistency**.
+
+The prompt engineering strategy is divided into two major components.
+
+---
 
 ## 1. Global Visual Anchor
 
-The system first generates a **story anchor** that ensures visual consistency across scenes.
+One of the main challenges in generating multi-scene storyboards is **visual consistency across scenes**.
 
-Example structure:
+If prompts are generated independently for each scene, image models may produce:
+
+* different character appearances
+* inconsistent environments
+* varying visual styles
+
+To address this, the system first generates a **global visual anchor**.
+
+The anchor describes the shared visual characteristics of the story, including:
 
 ```
 {
@@ -219,52 +349,233 @@ Example structure:
 }
 ```
 
-This ensures that:
+Example anchor:
 
-* characters remain visually consistent
-* the environment stays coherent
-* cinematic framing remains uniform
+```
+{
+ "characters": "young startup engineers and support agents",
+ "environment": "modern open-plan tech startup office",
+ "camera_style": "cinematic framing with wide and close-up shots",
+ "lighting_style": "dramatic soft lighting"
+}
+```
+
+This anchor is generated once and reused when constructing prompts for each scene.
+
+### Justification
+
+The visual anchor ensures that:
+
+* characters remain visually recognizable
+* environments stay consistent
+* scenes appear to belong to the same story world
+
+Without this step, the storyboard may look like **a collection of unrelated images rather than a coherent narrative sequence**.
 
 ---
 
-## 2. Scene Prompts
+## 2. Scene Prompt Construction
 
-Each scene is converted into a diffusion-ready prompt using the following structure:
+Once the global anchor is established, each refined scene is converted into a **diffusion-ready prompt**.
+
+The system uses a structured template that organizes prompt components in a specific order:
 
 ```
 STYLE + ENVIRONMENT + CHARACTERS + ACTION + CAMERA + LIGHTING
 ```
 
-Example:
+Example prompt:
 
 ```
 cinematic movie still, dramatic lighting,
-modern startup office,
-support team overwhelmed by support tickets,
+modern startup office environment,
+support team overwhelmed by customer tickets,
 wide shot, shallow depth of field
 ```
 
-This structure improves:
+### Justification
 
-* prompt clarity
-* image quality
-* scene consistency
+This structured approach aligns with how diffusion models interpret prompts.
+
+Each component plays a specific role:
+
+**Style tokens**
+
+Control artistic direction and visual aesthetics.
+
+Example:
+
+```
+cinematic movie still
+digital concept art
+watercolor illustration
+```
 
 ---
 
-# Image Generation Strategy
+**Environment tokens**
 
-Instead of generating prompts directly from raw text, the system performs:
+Establish the physical context of the scene.
+
+Example:
 
 ```
-Story
- → Scene Extraction
- → Scene Refinement
- → Visual Anchor Generation
- → Prompt Construction
+modern startup office
+busy warehouse
+city street at night
 ```
 
-This layered approach improves the quality and coherence of generated images.
+---
+
+**Character tokens**
+
+Ensure that the same characters appear consistently across scenes.
+
+Example:
+
+```
+startup engineers and support agents
+```
+
+---
+
+**Action tokens**
+
+Describe the primary event occurring in the scene.
+
+Example:
+
+```
+support team overwhelmed by tickets
+engineers deploying an AI assistant
+```
+
+---
+
+**Camera tokens**
+
+Improve scene composition by specifying framing.
+
+Example:
+
+```
+wide shot
+close-up
+over-the-shoulder shot
+```
+
+---
+
+**Lighting tokens**
+
+Enhance visual realism and cinematic quality.
+
+Example:
+
+```
+dramatic lighting
+soft studio lighting
+golden hour light
+```
+
+---
+
+This prompt structure ensures that each generated image contains:
+
+* clear subject focus
+* consistent environment
+* coherent visual composition
+
+---
+
+# 5. Image Generation
+
+The structured prompts are then passed to an image generation model.
+
+The system supports multiple image generation backends, including:
+
+* open-source diffusion models
+* hosted inference APIs
+* alternative generative image services
+
+Each prompt produces a **single storyboard panel**.
+
+### Justification
+
+Using generative image models allows the system to:
+
+* dynamically create visuals for arbitrary stories
+* maintain stylistic coherence across panels
+* generate storyboards quickly without manual illustration.
+
+---
+
+# 6. Caption Generation
+
+After images are generated, the system produces **captions for each scene using an LLM**.
+
+These captions summarize the narrative context of the image.
+
+Example:
+
+```
+Scene: Support agents overwhelmed by tickets
+
+Caption:
+"Customer support demand grows rapidly as the startup struggles to keep up."
+```
+
+### Justification
+
+Captions improve the storyboard by:
+
+* reinforcing narrative flow
+* clarifying scene interpretation
+* improving presentation readability
+
+They are especially useful when exporting storyboards to **PDF or PowerPoint formats**.
+
+---
+
+# Design Philosophy
+
+The system follows three guiding design principles.
+
+### Modular Pipeline
+
+Each stage performs a specific transformation, allowing components to be improved or replaced independently.
+
+---
+
+### LLM + Diffusion Collaboration
+
+The system combines two complementary AI capabilities.
+
+LLMs provide:
+
+* reasoning
+* narrative interpretation
+* prompt generation
+
+Diffusion models provide:
+
+* visual rendering
+* scene composition
+* stylistic imagery
+
+Together, they produce more coherent storyboards than either model type alone.
+
+---
+
+### Structured Prompts Over Long Prompts
+
+Rather than using extremely long prompts, the system relies on **structured prompts with clearly defined semantic components**.
+
+This results in:
+
+* improved image generation quality
+* reduced prompt ambiguity
+* better scene consistency.
 
 ---
 
