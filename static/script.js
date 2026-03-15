@@ -1,17 +1,10 @@
-/* ═══════════════════════════════════════════════════════
-   PITCH VISUALIZER — script.js
-   Full pipeline: generate → load → storyboard → download
-   ═══════════════════════════════════════════════════════ */
-
 'use strict';
 
-// ─── State ───────────────────────────────────────────
 let images   = [];
 let captions = [];
 let index    = 0;
 let pipelineTimer = null;
 
-// ─── DOM refs ─────────────────────────────────────────
 const generateBtn      = document.getElementById('generateBtn');
 const storyText        = document.getElementById('storyText');
 const charCount        = document.getElementById('charCount');
@@ -30,7 +23,6 @@ const dlPptBtn         = document.getElementById('dlPptBtn');
 const resetBtn         = document.getElementById('resetBtn');
 const toast            = document.getElementById('toast');
 
-// Pipeline step elements
 const steps = [
   document.getElementById('step1'),
   document.getElementById('step2'),
@@ -39,16 +31,13 @@ const steps = [
   document.getElementById('step5'),
 ];
 
-// Step timing in ms (approximate pipeline durations)
 const STEP_DURATIONS = [600, 2400, 1800, 6000, 1200];
 
-// ─── Character counter ────────────────────────────────
 storyText.addEventListener('input', () => {
   const n = storyText.value.length;
   charCount.textContent = n.toLocaleString() + ' character' + (n !== 1 ? 's' : '');
 });
 
-// ─── Generate ─────────────────────────────────────────
 generateBtn.addEventListener('click', async () => {
   const text = storyText.value.trim();
   if (!text) {
@@ -90,23 +79,18 @@ generateBtn.addEventListener('click', async () => {
   }
 });
 
-// ─── Loading state ────────────────────────────────────
 function startLoading() {
   generateBtn.disabled = true;
   loadingOverlay.setAttribute('aria-hidden', 'false');
   loadingOverlay.classList.add('active');
 
-  // Reset steps
   steps.forEach(s => s.classList.remove('active', 'done'));
 
-  // Animate pipeline steps
   let elapsed = 0;
   let stepIndex = 0;
 
   function advanceStep() {
     if (stepIndex >= steps.length) return;
-
-    // Mark previous done
     if (stepIndex > 0) steps[stepIndex - 1].classList.remove('active');
     if (stepIndex > 0) steps[stepIndex - 1].classList.add('done');
 
@@ -124,7 +108,6 @@ function startLoading() {
 function stopLoading() {
   if (pipelineTimer) clearTimeout(pipelineTimer);
 
-  // Quickly complete all steps
   steps.forEach(s => { s.classList.remove('active'); s.classList.add('done'); });
 
   setTimeout(() => {
@@ -134,37 +117,30 @@ function stopLoading() {
   }, 400);
 }
 
-// ─── Show storyboard ─────────────────────────────────
 function showStoryboard() {
   inputSection.style.display  = 'none';
   storyboardSec.classList.add('visible');
-
   buildThumbnails();
   renderPanel(index, false);
 }
 
-// ─── Render a panel ───────────────────────────────────
 function renderPanel(i, animate = true) {
   const img = storyImage;
   const cap = captionEl;
-
   if (animate) {
     img.classList.add('fading');
     cap.classList.add('fading');
   }
-
   const finalize = () => {
     img.src = images[i];
     cap.textContent = captions[i] || '';
     panelBadge.textContent = `PANEL ${pad(i + 1)} / ${pad(images.length)}`;
 
-    // Update nav arrows visibility
     prevBtn.hidden = images.length <= 1;
     nextBtn.hidden = images.length <= 1;
     prevBtn.disabled = i === 0;
     nextBtn.disabled = i === images.length - 1;
-
-    // Update thumbnails
+     
     document.querySelectorAll('.thumb').forEach((t, ti) => {
       t.classList.toggle('active', ti === i);
     });
@@ -186,7 +162,6 @@ function pad(n) {
   return String(n).padStart(2, '0');
 }
 
-// ─── Build thumbnails ─────────────────────────────────
 function buildThumbnails() {
   thumbnailStrip.innerHTML = '';
 
@@ -217,11 +192,9 @@ function buildThumbnails() {
     });
   });
 
-  // Show keyboard hint only if multiple panels
   keyboardHint.style.display = images.length > 1 ? 'flex' : 'none';
 }
 
-// ─── Navigation ───────────────────────────────────────
 function goTo(i) {
   if (i < 0 || i >= images.length || i === index) return;
   index = i;
@@ -237,7 +210,6 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft')  goTo(index - 1);
 });
 
-// ─── Reset / New Story ───────────────────────────────
 resetBtn.addEventListener('click', () => {
   images   = [];
   captions = [];
@@ -252,7 +224,6 @@ resetBtn.addEventListener('click', () => {
   storyText.focus();
 });
 
-// ─── Image to base64 helper ──────────────────────────
 async function fetchImageAsBase64(src) {
   const res  = await fetch(src);
   const blob = await res.blob();
@@ -264,7 +235,6 @@ async function fetchImageAsBase64(src) {
   });
 }
 
-// ─── Download PDF ─────────────────────────────────────
 dlPdfBtn.addEventListener('click', async () => {
   if (!images.length) return;
   dlPdfBtn.classList.add('loading');
@@ -273,8 +243,7 @@ dlPdfBtn.addEventListener('click', async () => {
   try {
     const { jsPDF } = window.jspdf;
 
-    // 16:9 page at 96dpi
-    const W = 297, H = 167.06; // mm landscape A4-ish 16:9
+    const W = 297, H = 167.06; // Can be modified according to requirements, currently kept static
     const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [W, H + 20] });
 
     for (let i = 0; i < images.length; i++) {
@@ -282,19 +251,13 @@ dlPdfBtn.addEventListener('click', async () => {
 
       const imgData = await fetchImageAsBase64(images[i]);
       pdf.addImage(imgData, 'JPEG', 0, 0, W, H);
-
-      // Dark footer band
       pdf.setFillColor(7, 7, 13);
       pdf.rect(0, H, W, 20, 'F');
-
-      // Caption
       pdf.setFont('helvetica', 'italic');
       pdf.setFontSize(9);
       pdf.setTextColor(220, 215, 200);
       const cap = captions[i] || '';
       pdf.text(cap, W / 2, H + 12, { align: 'center', maxWidth: W - 20 });
-
-      // Panel number (top-left)
       pdf.setFontSize(7);
       pdf.setTextColor(150, 140, 120);
       pdf.text(`${pad(i + 1)} / ${pad(images.length)}`, 6, 8);
@@ -312,7 +275,6 @@ dlPdfBtn.addEventListener('click', async () => {
   }
 });
 
-// ─── Download PPT ─────────────────────────────────────
 dlPptBtn.addEventListener('click', async () => {
   if (!images.length) return;
   dlPptBtn.classList.add('loading');
@@ -325,11 +287,7 @@ dlPptBtn.addEventListener('click', async () => {
 
     for (let i = 0; i < images.length; i++) {
       const slide = pptx.addSlide();
-
-      // Background
       slide.background = { color: '07070D' };
-
-      // Image
       const imgData = await fetchImageAsBase64(images[i]);
       const base64  = imgData.split(',')[1];
       const ext     = imgData.includes('image/png') ? 'png' : 'jpg';
@@ -340,14 +298,12 @@ dlPptBtn.addEventListener('click', async () => {
         w: 10, h: 4.8,
       });
 
-      // Caption band
       slide.addShape(pptx.ShapeType.rect, {
         x: 0, y: 4.8, w: 10, h: 0.825,
         fill: { color: '0F0F1C' },
         line:  { color: '1F1F35', width: 1 },
       });
 
-      // Caption text
       const cap = captions[i] || '';
       slide.addText(cap, {
         x: 0.3, y: 4.85, w: 9.4, h: 0.7,
@@ -359,7 +315,6 @@ dlPptBtn.addEventListener('click', async () => {
         valign: 'middle',
       });
 
-      // Panel number badge
       slide.addText(`${pad(i + 1)} / ${pad(images.length)}`, {
         x: 0.15, y: 0.1, w: 0.9, h: 0.28,
         fontSize: 8,
@@ -382,7 +337,6 @@ dlPptBtn.addEventListener('click', async () => {
   }
 });
 
-// ─── Toast ────────────────────────────────────────────
 let toastTimer = null;
 
 function showToast(msg, type = '') {
