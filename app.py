@@ -18,29 +18,26 @@ def home():
 def generate():
 
     data = request.json
-
     text = data.get("text")
     style = data.get("style")
-
-    print("\n--- STARTING PIPELINE ---")
-
-    # 1️⃣ segmentation
+    
+    # segmentation
     scenes = segment_story(text)
     print("Segmented scenes:", scenes)
 
-    # 2️⃣ scene refinement
+    # scene refinement
     refined_scenes = refine_scenes(scenes)
     print("Refined scenes:", refined_scenes)
 
-    # 3️⃣ prompt generation
+    # prompt generation
     prompts = build_flux_prompts(refined_scenes, style)
     print("Prompts generated")
 
-    # 4️⃣ image generation
+    # image generation
     image_paths = generate_images(prompts)
     print("Images generated:", image_paths)
 
-    # 5️⃣ captions
+    # captions
     captions = generate_captions(refined_scenes)
     print("Captions generated")
 
