@@ -8,21 +8,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garant:ital,wght@0,400;0,600;1,400;1,600&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-
-  <!-- jsPDF for PDF export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <!-- PptxGenJS for PPT export -->
   <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
-
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 
 <body>
-
-  <!-- Grain overlay -->
   <div class="grain-overlay" aria-hidden="true"></div>
-
-  <!-- ═══════════════════ INPUT SECTION ═══════════════════ -->
   <section class="input-section" id="inputSection">
 
     <div class="brand">
@@ -90,7 +82,6 @@
 
   </section>
 
-  <!-- ═══════════════════ LOADING OVERLAY ═══════════════════ -->
   <div class="loading-overlay" id="loadingOverlay" aria-live="polite" aria-hidden="true">
     <div class="loader-inner">
 
@@ -138,7 +129,6 @@
     </div>
   </div>
 
-  <!-- ═══════════════════ STORYBOARD SECTION ═══════════════════ -->
   <section class="storyboard-section" id="storyboardSection" aria-label="Storyboard viewer">
 
     <div class="sb-header">
@@ -149,7 +139,6 @@
       <button class="reset-btn mono" id="resetBtn" title="Start over">↩ New Story</button>
     </div>
 
-    <!-- Film viewer -->
     <div class="viewer-wrap">
       <div class="film-perfs left-perfs" aria-hidden="true">
         <span></span><span></span><span></span><span></span>
@@ -181,20 +170,16 @@
       </div>
     </div>
 
-    <!-- Caption -->
     <div class="caption-area">
       <div class="caption-text" id="captionText"></div>
     </div>
 
-    <!-- Thumbnail strip -->
     <div class="thumbnail-strip" id="thumbnailStrip" role="tablist" aria-label="Panel thumbnails"></div>
 
-    <!-- Keyboard hint -->
     <p class="keyboard-hint mono" id="keyboardHint">
       <span>←</span> <span>→</span> navigate panels
     </p>
 
-    <!-- Downloads -->
     <div class="download-bar">
       <button class="dl-btn" id="dlPdfBtn">
         <span class="dl-icon">⬇</span>
@@ -208,7 +193,6 @@
 
   </section>
 
-  <!-- Toast notification -->
   <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
 
   <script src="/static/script.js"></script>
